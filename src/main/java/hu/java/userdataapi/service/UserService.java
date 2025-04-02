@@ -1,48 +1,52 @@
 package hu.java.userdataapi.service;
 
-import hu.java.userdataapi.entity.User;
+import hu.java.userdataapi.entity.AppUser;
 import hu.java.userdataapi.exception.DataIntegrityViolationException;
 import hu.java.userdataapi.exception.UserNotFoundException;
+import hu.java.userdataapi.model.UserCredentials;
+import hu.java.userdataapi.model.enums.Role;
 import hu.java.userdataapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
+    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
 
-    public User findUserByID(long id) throws UserNotFoundException {
+    public AppUser findUserByID(long id) throws UserNotFoundException {
         return userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + id));
     }
 
-    public User createUser(User user) throws DataIntegrityViolationException {
-        if (userRepository.existsByEmail(user.getEmail())) {
+    public AppUser createUser(AppUser appUser) throws DataIntegrityViolationException {
+        if (userRepository.existsByEmail(appUser.getEmail())) {
             throw new DataIntegrityViolationException("Email address already in use");
         }
-        return userRepository.save(user);
+        appUser.setPassword(passwordEncoder.encode(appUser.getPassword()));
+        return userRepository.save(appUser);
     }
 
     //update user if the user already exists and the email address not in use
-    public void updateUser(User updatedUser) throws UserNotFoundException, DataIntegrityViolationException {
-         User oldUser = userRepository.findById(updatedUser.getId())
-                .orElseThrow(() -> new UserNotFoundException("User not found: " + updatedUser.getId()));
-        if (!oldUser.getEmail().equals(updatedUser.getEmail()) & userRepository.existsByEmail(updatedUser.getEmail())) {
+    public void updateUser(AppUser updatedAppUser) throws UserNotFoundException, DataIntegrityViolationException {
+        AppUser oldAppUser = findUserByID(updatedAppUser.getId());
+        if (!oldAppUser.getEmail().equals(updatedAppUser.getEmail()) & userRepository.existsByEmail(updatedAppUser.getEmail())) {
             throw new DataIntegrityViolationException("Email address already in use");
         }
-        userRepository.save(updatedUser);
+        if (!updatedAppUser.getPassword().isEmpty()) {
+            updatedAppUser.setPassword(passwordEncoder.encode(updatedAppUser.getPassword()));
+        }
+        userRepository.save(updatedAppUser);
     }
 
     public void deleteUser(long id) throws UserNotFoundException {
-        userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found: " + id));
+        findUserByID(id);
         userRepository.deleteById(id);
     }
 
@@ -55,10 +59,24 @@ public class UserService {
         return resp.toString();
     }
 
-    public List<User> getAllUsersBetweenSpecifiedAge(int minAge, int maxAge) {
+    public List<AppUser> getAllUsersBetweenSpecifiedAge(int minAge, int maxAge) {
         return userRepository.findAll().stream()
-                .filter(user -> user.getAge() >= minAge && user.getAge() <= maxAge)
+                .filter(appUser -> appUser.getAge() >= minAge && appUser.getAge() <= maxAge)
                 .collect(Collectors.toList());
+    }
+
+    public boolean checkIfAlreadyRegisteredAndRegister(UserCredentials userData) {
+        if (userRepository.findByEmail(userData.getEmail()).isEmpty()) {
+            userRepository.save(AppUser.builder()
+                    .name(userData.getUsername())
+                    .email(userData.getEmail())
+                    .roles(new HashSet<>(Arrays.asList(Role.USER, Role.ADMIN)))
+                    .password(passwordEncoder.encode(userData.getPassword()))
+                    .build());
+            return false;
+        }
+
+        return true;
     }
 
 }

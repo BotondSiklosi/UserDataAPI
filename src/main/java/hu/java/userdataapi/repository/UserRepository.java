@@ -1,6 +1,6 @@
 package hu.java.userdataapi.repository;
 
-import hu.java.userdataapi.entity.User;
+import hu.java.userdataapi.entity.AppUser;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
@@ -9,15 +9,19 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends CrudRepository<User, Long> {
+public interface UserRepository extends CrudRepository<AppUser, Long> {
 
-    Optional<User> findById(long id);
+    Optional<AppUser> findById(long id);
 
-    ArrayList<User> findAll();
+    Optional<AppUser> findByEmail(String email);
+
+    Optional<AppUser> findByName(String name);
+
+    ArrayList<AppUser> findAll();
 
     void deleteById(long id);
 
-    @Query("SELECT AVG(u.age) FROM User u")
+    @Query("SELECT AVG(u.age) FROM AppUser u")
     Double findAverageAge();
 
     boolean existsByEmail(String email);

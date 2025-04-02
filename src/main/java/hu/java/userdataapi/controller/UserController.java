@@ -1,6 +1,6 @@
 package hu.java.userdataapi.controller;
 
-import hu.java.userdataapi.entity.User;
+import hu.java.userdataapi.entity.AppUser;
 import hu.java.userdataapi.exception.DataIntegrityViolationException;
 import hu.java.userdataapi.service.UserService;
 import jakarta.validation.Valid;
@@ -23,14 +23,14 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/createUser")
-    public ResponseEntity<?> createUser(@Valid @RequestBody User user, BindingResult bindingResult) {
+    public ResponseEntity<?> createUser(@Valid @RequestBody AppUser appUser, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return buildValidationErrorResponse(bindingResult);
         }
 
         try {
-            User createdUser = userService.createUser(user);
-            return ResponseEntity.ok(createdUser);
+            AppUser createdAppUser = userService.createUser(appUser);
+            return ResponseEntity.ok(createdAppUser);
         } catch (DataIntegrityViolationException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "Email already exists"));
@@ -38,17 +38,17 @@ public class UserController {
     }
 
     @GetMapping("findById/{id}")
-    public ResponseEntity<User> findUser(@PathVariable long id) {
+    public ResponseEntity<AppUser> findUser(@PathVariable long id) {
         return ResponseEntity.ok(userService.findUserByID(id));
     }
 
     @PostMapping("/updateUser")
-    public ResponseEntity<?> updateUser(@Valid @RequestBody User user, BindingResult bindingResult) {
+    public ResponseEntity<?> updateUser(@Valid @RequestBody AppUser appUser, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return buildValidationErrorResponse(bindingResult);
         }
 
-        userService.updateUser(user);
+        userService.updateUser(appUser);
         return ResponseEntity.ok("User updated");
     }
 
@@ -64,8 +64,8 @@ public class UserController {
     }
 
     @GetMapping("/getUsersBetweenSpecifiedAge")
-    public ResponseEntity<List<User>> getUsersBetweenSpecifiedAge(@RequestParam(name = "minAge", defaultValue = "18") int minAge, @RequestParam(name = "maxAge", defaultValue = "40") int maxAge) {
-        List<User> resp = userService.getAllUsersBetweenSpecifiedAge(minAge, maxAge);
+    public ResponseEntity<List<AppUser>> getUsersBetweenSpecifiedAge(@RequestParam(name = "minAge", defaultValue = "18") int minAge, @RequestParam(name = "maxAge", defaultValue = "40") int maxAge) {
+        List<AppUser> resp = userService.getAllUsersBetweenSpecifiedAge(minAge, maxAge);
         return ResponseEntity.ok(resp);
     }
 
