@@ -25,7 +25,7 @@ public class Initializer {
                             .name("Kovács János")
                             .email("janos.kovacs@example.com")
                             .phone("+3612345678")
-                            .age(32)
+                            .age(15)
                             .address("Budapest, Kossuth tér 1.")
                             .build(),
 
