@@ -26,7 +26,7 @@ public class AppUser {
 
     @NotBlank(message = "Email is mandatory")
     @Email(message = "Email should be valid")
-    @Column(name = "email",unique = true, nullable = false)
+    @Column(name = "email", unique = true, nullable = false)
     private String email;
 
     @Pattern(regexp = "^\\+?[0-9\\s-]{10,}$", message = "Invalid phone number format")

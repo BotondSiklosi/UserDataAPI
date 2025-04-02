@@ -2,7 +2,7 @@ package hu.java.userdataapi.init;
 
 import hu.java.userdataapi.entity.AppUser;
 import hu.java.userdataapi.model.enums.Role;
-import hu.java.userdataapi.repository.UserRepository;
+import hu.java.userdataapi.repository.AppUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -17,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class Initializer {
 
-    private final UserRepository userRepository;
+    private final AppUserRepository appUserRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Bean
@@ -42,7 +42,7 @@ public class Initializer {
                             .phone("+3623456789")
                             .age(28)
                             .address("Debrecen, Piac utca 5.")
-                            .roles( new HashSet<>(Arrays.asList(Role.USER)))
+                            .roles( new HashSet<>(List.of(Role.USER)))
                             .build(),
 
                     AppUser.builder()
@@ -52,7 +52,7 @@ public class Initializer {
                             .phone("+3634567890")
                             .age(45)
                             .address("Szeged, Fő tér 10.")
-                            .roles( new HashSet<>(Arrays.asList(Role.USER)))
+                            .roles( new HashSet<>(List.of(Role.USER)))
                             .build(),
 
                     AppUser.builder()
@@ -62,7 +62,7 @@ public class Initializer {
                             .phone("+3645678901")
                             .age(22)
                             .address("Pécs, Király utca 15.")
-                            .roles( new HashSet<>(Arrays.asList(Role.USER)))
+                            .roles( new HashSet<>(List.of(Role.USER)))
                             .build(),
 
                     AppUser.builder()
@@ -72,11 +72,11 @@ public class Initializer {
                             .phone("+3656789012")
                             .age(38)
                             .address("Miskolc, Széchenyi utca 20.")
-                            .roles( new HashSet<>(Arrays.asList(Role.ADMIN)))
+                            .roles( new HashSet<>(List.of(Role.ADMIN)))
                             .build()
             );
 
-            userRepository.saveAll(appUsers);
+            appUserRepository.saveAll(appUsers);
         };
 
     }

@@ -5,7 +5,7 @@ import hu.java.userdataapi.exception.DataIntegrityViolationException;
 import hu.java.userdataapi.exception.UserNotFoundException;
 import hu.java.userdataapi.model.UserCredentials;
 import hu.java.userdataapi.model.enums.Role;
-import hu.java.userdataapi.repository.UserRepository;
+import hu.java.userdataapi.repository.AppUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,56 +18,56 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final PasswordEncoder passwordEncoder;
-    private final UserRepository userRepository;
+    private final AppUserRepository appUserRepository;
 
-    public AppUser findUserByID(long id) throws UserNotFoundException {
-        return userRepository.findById(id)
+    public AppUser findUserByID(Long id) throws UserNotFoundException {
+        return appUserRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + id));
     }
 
     public AppUser createUser(AppUser appUser) throws DataIntegrityViolationException {
-        if (userRepository.existsByEmail(appUser.getEmail())) {
+        if (appUserRepository.existsByEmail(appUser.getEmail())) {
             throw new DataIntegrityViolationException("Email address already in use");
         }
         appUser.setPassword(passwordEncoder.encode(appUser.getPassword()));
-        return userRepository.save(appUser);
+        return appUserRepository.save(appUser);
     }
 
     //update user if the user already exists and the email address not in use
     public void updateUser(AppUser updatedAppUser) throws UserNotFoundException, DataIntegrityViolationException {
         AppUser oldAppUser = findUserByID(updatedAppUser.getId());
-        if (!oldAppUser.getEmail().equals(updatedAppUser.getEmail()) & userRepository.existsByEmail(updatedAppUser.getEmail())) {
+        if (!oldAppUser.getEmail().equals(updatedAppUser.getEmail()) & appUserRepository.existsByEmail(updatedAppUser.getEmail())) {
             throw new DataIntegrityViolationException("Email address already in use");
         }
         if (!updatedAppUser.getPassword().isEmpty()) {
             updatedAppUser.setPassword(passwordEncoder.encode(updatedAppUser.getPassword()));
         }
-        userRepository.save(updatedAppUser);
+        appUserRepository.save(updatedAppUser);
     }
 
-    public void deleteUser(long id) throws UserNotFoundException {
+    public void deleteUser(Long id) throws UserNotFoundException {
         findUserByID(id);
-        userRepository.deleteById(id);
+        appUserRepository.deleteById(id);
     }
 
-    public String AVGUserAge() {
-        Double avg = userRepository.findAverageAge();
+    public Map<String, String> AVGUserAge() {
+        Double avg = appUserRepository.findAverageAge();
 
         Map<String, String> resp = new HashMap<>();
-        resp.put("NumberOfUsers", String.valueOf(userRepository.count()));
+        resp.put("NumberOfUsers", String.valueOf(appUserRepository.count()));
         resp.put("AVG Num", avg != null ? avg.toString() : "0.0");
-        return resp.toString();
+        return resp;
     }
 
     public List<AppUser> getAllUsersBetweenSpecifiedAge(int minAge, int maxAge) {
-        return userRepository.findAll().stream()
+        return appUserRepository.findAll().stream()
                 .filter(appUser -> appUser.getAge() >= minAge && appUser.getAge() <= maxAge)
                 .collect(Collectors.toList());
     }
 
     public boolean checkIfAlreadyRegisteredAndRegister(UserCredentials userData) {
-        if (userRepository.findByEmail(userData.getEmail()).isEmpty()) {
-            userRepository.save(AppUser.builder()
+        if (appUserRepository.findByEmail(userData.getEmail()).isEmpty()) {
+            appUserRepository.save(AppUser.builder()
                     .name(userData.getUsername())
                     .email(userData.getEmail())
                     .roles(new HashSet<>(Arrays.asList(Role.USER, Role.ADMIN)))

@@ -38,7 +38,7 @@ public class UserController {
     }
 
     @GetMapping("findById/{id}")
-    public ResponseEntity<AppUser> findUser(@PathVariable long id) {
+    public ResponseEntity<AppUser> findUser(@PathVariable Long id) {
         return ResponseEntity.ok(userService.findUserByID(id));
     }
 
@@ -53,14 +53,14 @@ public class UserController {
     }
 
     @GetMapping("/deleteUserById/{id}")
-    public ResponseEntity<String> deleteUserById(@PathVariable long id) {
+    public ResponseEntity<String> deleteUserById(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.ok("User has been deleted successfully");
     }
 
     @GetMapping("/getUsersAVGAge")
     public ResponseEntity<String> getUsersAVGAge() {
-        return ResponseEntity.ok(userService.AVGUserAge());
+        return ResponseEntity.ok(userService.AVGUserAge().toString());
     }
 
     @GetMapping("/getUsersBetweenSpecifiedAge")
